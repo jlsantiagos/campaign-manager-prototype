@@ -1,2 +1,375 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Campaign Manager Prototype</title></head><body><p>This prototype is being published.</p></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Campaign Manager Prototype</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#bdbdbd;--surface:#f1f1f1;--panel:#ddd;--white:#fff;--line:#222;--muted:#666;--dark:#292929;--green:#dcffd0;--blue:#e8f0ff}
+body{margin:0;background:#aaa;font-family:Arial,Helvetica,sans-serif;color:#111}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+.app{min-height:100vh;border:3px solid #222;background:var(--bg)}
+.topbar{height:60px;background:#aaa;border-bottom:1px solid #999}
+.page{padding:30px 22px 48px;max-width:1500px;margin:auto}
+.header{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:25px}
+h1{font-size:25px;font-weight:400;margin:0}h2{font-size:22px;font-weight:400;margin:0 0 6px}h3{font-size:17px;font-weight:500;margin:0 0 8px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{border:0;background:var(--dark);color:#fff;padding:12px 17px;min-height:44px}.btn:hover{background:#111}.btn.light{background:#fff;color:#222;border:1px solid #aaa}.btn.danger{background:#8d2222}.btn:disabled{opacity:.45;cursor:not-allowed}
+.table-wrap{background:#ddd;padding:30px;border:1px solid #c8c8c8;overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:#fff;min-width:950px}th{background:#ddd;text-align:left;padding:13px 15px;font-size:14px;font-weight:500}td{padding:14px 15px;border-top:1px solid #222;font-size:14px}
+.data-row{cursor:pointer}.data-row:hover{background:#f3f3f3}.data-row.selected{background:#e7e7e7}
+.check{width:23px;height:23px;accent-color:#222;vertical-align:middle;cursor:pointer}
+.status-live{font-weight:500}.status-draft{color:#666}
+.crumb{display:flex;align-items:center;gap:8px;margin:0 0 24px;font-size:16px}.link{background:none;border:0;padding:0;font-size:16px;text-decoration:underline}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:34px}.campaign-panel{background:#ddd;padding:18px;min-width:0;border:1px solid #ccc}.campaign-head{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:18px}.campaign-name{font-size:23px;font-weight:400}
+.search{width:100%;height:36px;border:1px solid #ddd;background:#fff;padding:6px 12px;margin-bottom:16px;outline:none}.search:focus{outline:2px solid #777}
+.asset-table{background:#fff}.asset-head,.asset-row{display:grid;grid-template-columns:45px minmax(120px,1fr) 145px 175px;align-items:center}.asset-head{background:#f2f2f2;font-size:13px;font-weight:500}.asset-head>div,.asset-row>div{padding:10px 10px}.asset-row{border-top:1px solid #222;min-height:55px}.asset-row.new{background:var(--green)}.asset-row.dragging{opacity:.45}.asset-name{cursor:pointer}.asset-name:hover{text-decoration:underline}.asset-actions{display:flex;gap:5px}.small{background:#fff;border:1px solid #aaa;padding:6px 8px;font-size:12px}.small:hover{background:#eee}.copy-arrow{width:34px;height:32px;padding:0;font-size:18px;line-height:1}.copy-arrow:hover{background:#e8f0ff}.copy-arrow:disabled{opacity:.45;cursor:not-allowed}.drop-active{outline:3px dashed #555;outline-offset:-8px}.hint{font-size:12px;color:#666;margin-top:10px}
+.detail-card{background:#ddd;padding:25px}.meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:25px;margin-bottom:28px}.meta-label{font-size:12px;color:#666;margin-bottom:5px}
+.toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}.selection-note{font-size:13px;color:#555}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.52);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}.modal{background:#fff;width:min(760px,96vw);max-height:90vh;overflow:auto;border:1px solid #222}.modal.wide{width:min(980px,96vw)}.modal-head{display:flex;justify-content:space-between;align-items:center;padding:17px 21px;border-bottom:1px solid #ccc;font-size:20px}.modal-body{padding:24px}.modal-footer{display:flex;justify-content:flex-end;gap:9px;padding:15px 21px;border-top:1px solid #ccc}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:13px;color:#444}.field input,.field select,.field textarea{border:1px solid #aaa;background:#fff;padding:11px}.field textarea{min-height:100px;resize:vertical}
+.preview{display:grid;grid-template-columns:1fr 1fr;gap:24px}.preview-art{min-height:300px;background:linear-gradient(135deg,#ededed,#fff);border:1px solid #aaa;display:flex;align-items:center;justify-content:center;font-size:42px;color:#777}.preview-info{padding:5px}.meta-line{font-size:13px;color:#666;margin:8px 0}
+.change-list{border:1px solid #aaa;background:#fafafa}.change{display:flex;justify-content:space-between;gap:20px;padding:14px;border-bottom:1px solid #ccc}.change:last-child{border-bottom:0}.tag{font-size:11px;padding:4px 7px;background:#eee;white-space:nowrap}.tag.add{background:#dcffd0}.tag.remove{background:#ffdada}
+.compare-summary{background:#eee;border:1px solid #bbb;padding:14px;margin-bottom:18px}.diff{display:grid;grid-template-columns:1fr 1fr;gap:18px}.diff-panel{border:1px solid #aaa;background:#fff;padding:15px}.diff-item{padding:10px;border-bottom:1px solid #ddd}.diff-item:last-child{border:0}.new-label{color:#176b24;font-size:11px}
+.toast{position:fixed;right:24px;bottom:24px;background:#222;color:#fff;padding:13px 18px;z-index:100;max-width:360px}.drag-feedback{position:fixed;z-index:90;pointer-events:none;background:#222;color:#fff;padding:10px 14px;border-radius:3px;font-size:13px;box-shadow:0 4px 16px #0004;white-space:nowrap}
+.confirm{max-width:480px}
+.empty{padding:28px;text-align:center;color:#666}
+.kebab{font-size:18px;border:0;background:transparent;padding:8px}
+.dropdown{position:absolute;background:#fff;border:1px solid #aaa;box-shadow:0 4px 14px #0002;z-index:30;min-width:190px}.dropdown button{display:block;width:100%;text-align:left;border:0;background:#fff;padding:12px}.dropdown button:hover{background:#eee}
+@media(max-width:900px){.compare-grid,.preview{grid-template-columns:1fr}.meta-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.page{padding:18px 10px}.table-wrap{padding:12px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.asset-head,.asset-row{grid-template-columns:35px minmax(110px,1fr) 95px 75px}.asset-actions{flex-direction:column}.topbar{height:42px}}
+</style>
+</head>
+<body>
+<div class="app"><div class="topbar"></div><main class="page" id="app"></main></div>
+
+<script>
+(function(){
+"use strict";
+
+const campaigns={
+ A:{id:"A",title:"Campaign A",created:"July 3, 2026",published:"Sep 10, 2026",status:"Published / Live",creator:"Jose S",description:"Summer acquisition campaign.",assets:[
+  {id:"A-1",name:"Asset A",date:"July 3, 2026",type:"Banner",dimensions:"1200 × 628",description:"Primary campaign banner"},
+  {id:"A-2",name:"Asset B",date:"July 3, 2026",type:"Social",dimensions:"1080 × 1080",description:"Social square creative"},
+  {id:"A-3",name:"Asset C",date:"July 3, 2026",type:"Email",dimensions:"1200 × 600",description:"Email hero creative"}
+ ]},
+ B:{id:"B",title:"Campaign B",created:"Sep 10, 2026",published:"—",status:"In progress / draft",creator:"Jose S",description:"Fall product launch campaign.",assets:[
+  {id:"B-1",name:"Asset A",date:"Sep 18, 2026",type:"Banner",dimensions:"1200 × 628",description:"New campaign banner"},
+  {id:"B-2",name:"Asset D",date:"July 3, 2026",type:"Social",dimensions:"1080 × 1080",description:"Launch social creative"}
+ ]},
+ C:{id:"C",title:"Campaign C",created:"Nov 2, 2025",published:"Dec 20, 2025",status:"Published / Live",creator:"Peter D",description:"Holiday campaign.",assets:[
+  {id:"C-1",name:"Asset E",date:"Dec 20, 2025",type:"Banner",dimensions:"1200 × 628",description:"Holiday banner"},
+  {id:"C-2",name:"Asset F",date:"Dec 20, 2025",type:"Social",dimensions:"1080 × 1080",description:"Holiday social creative"}
+ ]}
+};
+
+let view="list",selected=[],currentCampaign=null,searchTerms={},selectedAssets={},modalOpen=false;
+const app=document.getElementById("app");
+let toastTimer;
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+function toast(msg){clearTimeout(toastTimer);document.querySelectorAll(".toast").forEach(x=>x.remove());const x=document.createElement("div");x.className="toast";x.textContent=msg;document.body.appendChild(x);toastTimer=setTimeout(()=>x.remove(),2200);}
+function clone(x){return JSON.parse(JSON.stringify(x));}
+function uid(prefix){return prefix+"-"+Date.now()+"-"+Math.random().toString(36).slice(2,7);}
+function getAsset(cid,aid){return campaigns[cid]?.assets.find(a=>a.id===aid);}
+function goList(){view="list";currentCampaign=null;render();}
+function openCampaign(cid){currentCampaign=cid;view="campaign";render();}
+function destinationForCopy(source){if(view==="compare")return selected.find(x=>x!==source)||null;return null;}
+
+function render(){
+ if(view==="list")renderList();
+ if(view==="compare")renderCompare();
+ if(view==="campaign")renderCampaign(currentCampaign);
+}
+
+function renderList(){
+ app.innerHTML=`
+ <div class="header"><h1>Campaigns</h1><div class="actions">
+  <button class="btn" id="addCampaign">+ Add campaign</button>
+  <button class="btn" id="compareBtn" ${selected.length!==2?"disabled":""}>Compare</button>
+ </div></div>
+ <div class="table-wrap"><table><thead><tr>
+ <th><input class="check" id="selectAll" type="checkbox" aria-label="Select all"></th><th>Campaign title</th><th>Date created</th><th>Date published</th><th>Status</th><th>Created by</th><th>Actions</th>
+ </tr></thead><tbody>
+ ${Object.values(campaigns).map(c=>`
+ <tr class="data-row ${selected.includes(c.id)?"selected":""}" data-open="${c.id}">
+  <td><input class="check campaign-check" data-id="${c.id}" type="checkbox" ${selected.includes(c.id)?"checked":""} aria-label="Select ${esc(c.title)}"></td>
+  <td>${esc(c.title)}</td><td>${esc(c.created)}</td><td>${esc(c.published)}</td><td>${esc(c.status)}</td><td>${esc(c.creator)}</td>
+  <td><button class="kebab row-menu" data-id="${c.id}" aria-label="Campaign actions">⋯</button></td>
+ </tr>`).join("")}
+ </tbody></table></div>`;
+ document.getElementById("addCampaign").onclick=()=>openCampaignForm();
+ document.getElementById("compareBtn").onclick=()=>{if(selected.length===2){view="compare";render();}};
+ document.querySelectorAll(".campaign-check").forEach(cb=>cb.onclick=e=>{
+   e.stopPropagation();const id=cb.dataset.id;
+   if(cb.checked){if(selected.length<2)selected.push(id);else{cb.checked=false;toast("Select only two campaigns to compare.");return;}}
+   else selected=selected.filter(x=>x!==id);render();
+ });
+ document.querySelectorAll(".data-row").forEach(r=>r.onclick=e=>{if(e.target.closest(".campaign-check")||e.target.closest(".row-menu"))return;openCampaign(r.dataset.open);});
+ document.querySelectorAll(".row-menu").forEach(b=>b.onclick=e=>{e.stopPropagation();openCampaignMenu(b,b.dataset.id);});
+ document.getElementById("selectAll").onclick=e=>{selected=e.target.checked?Object.keys(campaigns).slice(0,2):[];render();};
+}
+
+function openCampaignMenu(button,cid){
+ document.querySelectorAll(".dropdown").forEach(x=>x.remove());
+ const d=document.createElement("div");d.className="dropdown";d.style.position="absolute";d.style.top=(button.getBoundingClientRect().bottom+scrollY)+"px";d.style.left=(button.getBoundingClientRect().left+scrollX-130)+"px";
+ d.innerHTML=`<button data-action="edit">Edit campaign</button><button data-action="duplicate">Duplicate</button><button data-action="delete">Delete</button>${campaigns[cid].status.includes("draft")?"<button data-action=\"publish\">Publish</button>":"<button data-action=\"unpublish\">Unpublish</button>"}`;
+ document.body.appendChild(d);
+ d.onclick=e=>{const a=e.target.dataset.action;if(!a)return;d.remove();
+   if(a==="edit")openCampaign(cid);
+   if(a==="duplicate")duplicateCampaign(cid);
+   if(a==="delete")confirmDeleteCampaign(cid);
+   if(a==="publish")publishCampaign(cid);
+   if(a==="unpublish")unpublishCampaign(cid);
+ };
+ setTimeout(()=>document.addEventListener("click",function close(e){if(!d.contains(e.target)){d.remove();document.removeEventListener("click",close);}}, {once:true}),0);
+}
+
+function duplicateCampaign(cid){
+ const src=campaigns[cid], id="X"+Date.now();
+ campaigns[id]={...clone(src),id,title:src.title+" copy",created:"Sep 18, 2026",published:"—",status:"In progress / draft",assets:src.assets.map(a=>({...clone(a),id:uid(id)}))};
+ toast("Campaign duplicated as a draft.");render();
+}
+function confirmDeleteCampaign(cid){
+ confirmModal("Delete campaign?",`This will permanently remove <strong>${esc(campaigns[cid].title)}</strong> and its assets from this prototype.`,()=>{
+   delete campaigns[cid];selected=selected.filter(x=>x!==cid);toast("Campaign deleted.");render();
+ });
+}
+function publishCampaign(cid){campaigns[cid].status="Published / Live";campaigns[cid].published="Sep 18, 2026";toast("Campaign published.");render();}
+function unpublishCampaign(cid){campaigns[cid].status="In progress / draft";campaigns[cid].published="—";toast("Campaign unpublished.");render();}
+
+function openCampaignForm(){
+ formModal("Add campaign",null,{title:"",description:"",status:"draft"},data=>{
+   const id="X"+Date.now();
+   campaigns[id]={id,title:data.title.trim()||"Untitled campaign",created:"Sep 18, 2026",published:"—",status:"In progress / draft",creator:"Jose S",description:data.description,assets:[]};
+   currentCampaign=id;view="campaign";toast("Campaign created as a draft.");render();
+ });
+}
+
+function formModal(title,asset,cancelData,onSave){
+ const isAsset=!!asset;
+ const value=asset||cancelData;
+ const backdrop=document.createElement("div");backdrop.className="modal-backdrop";
+ backdrop.innerHTML=`<div class="modal" role="dialog" aria-modal="true">
+ <div class="modal-head"><span>${esc(title)}</span><button class="btn light close">Close</button></div>
+ <form id="form"><div class="modal-body"><div class="form-grid">
+  <div class="field full"><label>Name</label><input id="f-name" required value="${esc(value.name||"")}"></div>
+  ${isAsset?`<div class="field"><label>Asset type</label><select id="f-type"><option ${value.type==="Banner"?"selected":""}>Banner</option><option ${value.type==="Social"?"selected":""}>Social</option><option ${value.type==="Email"?"selected":""}>Email</option><option ${value.type==="Video"?"selected":""}>Video</option></select></div>
+  <div class="field"><label>Dimensions</label><input id="f-dim" value="${esc(value.dimensions||"")}"></div>`:""}
+  <div class="field full"><label>${isAsset?"Description":"Campaign description"}</label><textarea id="f-desc">${esc(value.description||"")}</textarea></div>
+ </div></div><div class="modal-footer"><button type="button" class="btn light close">Cancel</button><button class="btn">${isAsset?"Save asset":"Create campaign"}</button></div></form></div>`;
+ document.body.appendChild(backdrop);
+ const close=()=>backdrop.remove();backdrop.querySelectorAll(".close").forEach(x=>x.onclick=close);
+ backdrop.querySelector("form").onsubmit=e=>{e.preventDefault();const data={name:backdrop.querySelector("#f-name").value,type:isAsset?backdrop.querySelector("#f-type").value:undefined,dimensions:isAsset?backdrop.querySelector("#f-dim").value:undefined,description:backdrop.querySelector("#f-desc").value};close();onSave(data);};
+ backdrop.addEventListener("click",e=>{if(e.target===backdrop)close();});
+}
+
+function assetMarkup(c,allowCopy=false){
+ const q=(searchTerms[c.id]||"").toLowerCase();
+ const assets=c.assets.filter(a=>a.name.toLowerCase().includes(q));
+ const dest=allowCopy?destinationForCopy(c.id):null;
+ return assets.length?assets.map(a=>`
+ <div class="asset-row ${a.newAsset?"new":""}" draggable="true" data-asset="${a.id}" data-source="${c.id}">
+  <div><input class="check asset-check" type="checkbox" data-campaign="${c.id}" data-asset="${a.id}" ${selectedAssets[c.id]?.includes(a.id)?"checked":""}></div>
+  <div class="asset-name preview-trigger" data-campaign="${c.id}" data-asset="${a.id}">${a.newAsset?'<span class="new-label">just added</span> ':''}${esc(a.name)}</div>
+  <div>${esc(a.date)}</div>
+  <div class="asset-actions">${dest?`<button class="small copy-arrow copy-one" title="Copy to ${esc(campaigns[dest].title)}" aria-label="Copy ${esc(a.name)} to ${esc(campaigns[dest].title)}" data-source="${c.id}" data-asset="${a.id}" data-dest="${dest}">→</button>`:''}<button class="small preview-trigger" data-campaign="${c.id}" data-asset="${a.id}">Preview</button><button class="small edit-asset" data-campaign="${c.id}" data-asset="${a.id}">Edit</button></div>
+ </div>`).join(""):`<div class="empty">No assets found.</div>`;
+}
+
+function panel(c,allowCopy=true){
+ return `<section class="campaign-panel" data-panel="${c.id}">
+ <div class="campaign-head"><div><div class="campaign-name">${esc(c.title)}</div><div style="font-size:12px;color:#666;margin-top:4px">${esc(c.status)}</div></div>
+ <button class="btn add-asset" data-campaign="${c.id}">+ Add asset</button></div>
+ <input class="search" data-search="${c.id}" placeholder="Search asset" value="${esc(searchTerms[c.id]||"")}">
+ <div class="toolbar"><div class="selection-note" data-note="${c.id}"></div>${allowCopy?`<div class="actions"><button class="small copy-selected" data-campaign="${c.id}" disabled>Copy (0) assets</button><button class="small delete-selected" data-campaign="${c.id}" disabled>Remove selected</button></div>`:""}</div>
+ <div class="asset-table"><div class="asset-head"><div><input class="check" type="checkbox" disabled></div><div>Asset name</div><div>Date added</div><div>Actions</div></div>${assetMarkup(c,allowCopy)}</div>
+ <div class="hint">Use the arrow to copy an asset to the other campaign, or select multiple assets for bulk copy. Drag-and-drop is also available.</div>
+ </section>`;
+}
+
+function renderCompare(){
+ if(selected.length!==2){goList();return}
+ const a=campaigns[selected[0]],b=campaigns[selected[1]];
+ app.innerHTML=`<div class="crumb"><button class="link" id="back">← Campaigns</button><span>›</span><span>Comparing ${esc(a.title)} and ${esc(b.title)}</span><span style="flex:1"></span><button class="btn" id="previewChanges">Preview changes</button></div>
+ <div class="compare-grid">${panel(a)}${panel(b)}</div>`;
+ bindPanels();
+ document.getElementById("back").onclick=goList;
+ document.getElementById("previewChanges").onclick=()=>openChangesPreview();
+}
+
+function renderCampaign(cid){
+ const c=campaigns[cid];
+ app.innerHTML=`<div class="crumb"><button class="link" id="back">← Campaigns</button><span>›</span><span>${esc(c.title)}</span></div>
+ <div class="header"><div><h1>${esc(c.title)}</h1><div style="font-size:13px;color:#666;margin-top:5px">${esc(c.description||"No description")}</div></div>
+ <div class="actions"><button class="btn light" id="duplicate">Duplicate</button><button class="btn" id="save">${c.status.includes("draft")?"Publish campaign":"Save changes"}</button></div></div>
+ <div class="detail-card"><div class="meta-grid">
+ <div><div class="meta-label">Date created</div>${esc(c.created)}</div><div><div class="meta-label">Date published</div>${esc(c.published)}</div><div><div class="meta-label">Status</div>${esc(c.status)}</div><div><div class="meta-label">Created by</div>${esc(c.creator)}</div>
+ </div>${panel(c,false)}</div>`;
+ bindPanels();
+ document.getElementById("back").onclick=goList;
+ document.getElementById("duplicate").onclick=()=>duplicateCampaign(cid);
+ document.getElementById("save").onclick=()=>{if(c.status.includes("draft"))publishCampaign(cid);else showToast("Changes saved.");};
+}
+
+function bindPanels(){
+ document.querySelectorAll(".add-asset").forEach(btn=>btn.onclick=()=>{
+   const cid=btn.dataset.campaign;
+   formModal("Add asset",null,{name:"",description:"",type:"Banner",dimensions:"1200 × 628"},data=>{
+     campaigns[cid].assets.push({id:uid(cid),name:data.name.trim()||"Untitled asset",date:"Sep 18, 2026",type:data.type,dimensions:data.dimensions,description:data.description,newAsset:true});
+     render();toast("Asset added to "+campaigns[cid].title+".");
+   });
+ });
+ document.querySelectorAll(".edit-asset").forEach(btn=>btn.onclick=()=>{
+   const cid=btn.dataset.campaign,aid=btn.dataset.asset,a=getAsset(cid,aid);if(!a)return;
+   formModal("Edit asset",a,null,data=>{
+     Object.assign(a,{name:data.name.trim()||a.name,type:data.type,dimensions:data.dimensions,description:data.description});
+     a.newAsset=false;render();toast("Asset changes saved.");
+   });
+ });
+ document.querySelectorAll(".preview-trigger").forEach(btn=>btn.onclick=e=>{e.stopPropagation();openPreview(btn.dataset.campaign,btn.dataset.asset);});
+ document.querySelectorAll(".asset-check").forEach(cb=>cb.onchange=()=>{
+   const cid=cb.dataset.campaign;selectedAssets[cid]=selectedAssets[cid]||[];
+   if(cb.checked)selectedAssets[cid].push(cb.dataset.asset);else selectedAssets[cid]=selectedAssets[cid].filter(x=>x!==cb.dataset.asset);
+   updateSelectionUI();
+ });
+ document.querySelectorAll(".copy-selected").forEach(btn=>btn.onclick=()=>copySelected(btn.dataset.campaign));
+ document.querySelectorAll(".delete-selected").forEach(btn=>btn.onclick=()=>removeSelected(btn.dataset.campaign));
+ document.querySelectorAll(".search").forEach(input=>input.oninput=()=>{
+   searchTerms[input.dataset.search]=input.value;refreshPanel(input.closest(".campaign-panel"),input.dataset.search);
+ });
+ document.querySelectorAll(".asset-row").forEach(row=>{
+   row.ondragstart=e=>{
+     const source=row.dataset.source, asset=row.dataset.asset;
+     const name=getAsset(source,asset)?.name||"Asset";
+     e.dataTransfer.setData("text/plain",JSON.stringify({source:source,asset:asset}));
+     e.dataTransfer.effectAllowed="copy";
+     row.classList.add("dragging");
+     showDragFeedback("Copying "+name+" from "+campaigns[source].title);
+   };
+   row.ondrag=()=>{
+     const feedback=document.querySelector(".drag-feedback");
+     if(feedback){feedback.style.left=(event.clientX+14)+"px";feedback.style.top=(event.clientY+14)+"px";}
+   };
+   row.ondragend=()=>{
+     row.classList.remove("dragging");
+     const feedback=document.querySelector(".drag-feedback");if(feedback)feedback.remove();
+   };
+ });
+ document.querySelectorAll(".campaign-panel").forEach(p=>{
+   p.ondragover=e=>{e.preventDefault();p.classList.add("drop-active");};
+   p.ondragleave=e=>{if(!p.contains(e.relatedTarget))p.classList.remove("drop-active");};
+   p.ondrop=e=>{e.preventDefault();p.classList.remove("drop-active");try{const d=JSON.parse(e.dataTransfer.getData("text/plain"));moveAsset(d.source,p.dataset.panel,d.asset);}catch(_){}};
+ });
+ updateSelectionUI();
+}
+
+function refreshPanel(panelEl,cid){
+ const c=campaigns[cid];const table=panelEl.querySelector(".asset-table");
+ const allowCopy=view==="compare";table.innerHTML=`<div class="asset-head"><div><input class="check" type="checkbox" disabled></div><div>Asset name</div><div>Date added</div><div>Actions</div></div>${assetMarkup(c,allowCopy)}`;
+ bindAssetRowsOnly(panelEl);updateSelectionUI();
+}
+function bindAssetRowsOnly(scope){
+ scope.querySelectorAll(".copy-one").forEach(btn=>btn.onclick=e=>{e.stopPropagation();copyOne(btn.dataset.source,btn.dataset.dest,btn.dataset.asset);});
+ scope.querySelectorAll(".preview-trigger").forEach(btn=>btn.onclick=e=>{e.stopPropagation();openPreview(btn.dataset.campaign,btn.dataset.asset);});
+ scope.querySelectorAll(".edit-asset").forEach(btn=>btn.onclick=()=>{const a=getAsset(btn.dataset.campaign,btn.dataset.asset);formModal("Edit asset",a,null,data=>{Object.assign(a,{name:data.name.trim()||a.name,type:data.type,dimensions:data.dimensions,description:data.description,newAsset:false});render();toast("Asset changes saved.");});});
+ scope.querySelectorAll(".asset-check").forEach(cb=>cb.onchange=()=>{const cid=cb.dataset.campaign;selectedAssets[cid]=selectedAssets[cid]||[];if(cb.checked)selectedAssets[cid].push(cb.dataset.asset);else selectedAssets[cid]=selectedAssets[cid].filter(x=>x!==cb.dataset.asset);updateSelectionUI();});
+ scope.querySelectorAll(".asset-row").forEach(row=>{
+   row.ondragstart=e=>{
+     const source=row.dataset.source, asset=row.dataset.asset;
+     const name=getAsset(source,asset)?.name||"Asset";
+     e.dataTransfer.setData("text/plain",JSON.stringify({source:source,asset:asset}));
+     e.dataTransfer.effectAllowed="copy";
+     row.classList.add("dragging");
+     showDragFeedback("Copying "+name+" from "+campaigns[source].title);
+   };
+   row.ondrag=()=>{
+     const feedback=document.querySelector(".drag-feedback");
+     if(feedback){feedback.style.left=(event.clientX+14)+"px";feedback.style.top=(event.clientY+14)+"px";}
+   };
+   row.ondragend=()=>{
+     row.classList.remove("dragging");
+     const feedback=document.querySelector(".drag-feedback");if(feedback)feedback.remove();
+   };
+ });
+}
+
+function updateSelectionUI(){
+ document.querySelectorAll(".campaign-panel").forEach(p=>{
+   const cid=p.dataset.panel,ids=(selectedAssets[cid]||[]),note=p.querySelector(`[data-note="${cid}"]`);
+   if(note)note.textContent=ids.length?ids.length+" asset"+(ids.length>1?"s":"")+" selected":"";
+   const copy=p.querySelector(".copy-selected"),del=p.querySelector(".delete-selected");
+   if(copy){const dest=destinationForCopy(cid);copy.disabled=ids.length===0||!dest;copy.textContent=dest?`Copy (${ids.length}) assets to ${campaigns[dest].title}`:`Copy (${ids.length}) assets`;}
+   if(del)del.disabled=ids.length===0;
+ });
+}
+
+function copyOne(source,dest,aid){
+ if(!dest||source===dest)return;
+ const a=getAsset(source,aid);if(!a)return;
+ campaigns[dest].assets.push({...clone(a),id:uid(dest),date:"Sep 18, 2026",newAsset:true});
+ render();toast(a.name+" copied to "+campaigns[dest].title+".");
+}
+
+function copySelected(source){
+ const ids=selectedAssets[source]||[],dest=destinationForCopy(source);if(!dest||!ids.length)return;
+ ids.forEach(aid=>{const a=getAsset(source,aid);if(a)campaigns[dest].assets.push({...clone(a),id:uid(dest),date:"Sep 18, 2026",newAsset:true});});
+ selectedAssets[source]=[];render();toast(ids.length+" asset"+(ids.length>1?"s":"")+" copied to "+campaigns[dest].title+".");
+}
+
+function removeSelected(cid){
+ const ids=selectedAssets[cid]||[];if(!ids.length)return;
+ confirmModal("Remove selected assets?",`Remove ${ids.length} selected asset${ids.length>1?"s":""} from <strong>${esc(campaigns[cid].title)}</strong>?`,()=>{
+   campaigns[cid].assets=campaigns[cid].assets.filter(a=>!ids.includes(a.id));selectedAssets[cid]=[];render();toast("Selected assets removed.");
+ });
+}
+
+function showDragFeedback(message){
+ const old=document.querySelector(".drag-feedback");if(old)old.remove();
+ const el=document.createElement("div");el.className="drag-feedback";el.textContent=message;
+ el.style.left=(window.innerWidth/2-90)+"px";el.style.top=(window.innerHeight/2-25)+"px";
+ document.body.appendChild(el);
+}
+function moveAsset(source,dest,aid){
+ if(source===dest)return;
+ const a=getAsset(source,aid);if(!a)return;
+ const duplicate={...clone(a),id:uid(dest),date:"Sep 18, 2026",newAsset:true};
+ campaigns[dest].assets.push(duplicate);
+ render();
+ toast(a.name+" copied to "+campaigns[dest].title+".");
+}
+
+function openPreview(cid,aid){
+ const a=getAsset(cid,aid);if(!a)return;
+ const b=document.createElement("div");b.className="modal-backdrop";
+ b.innerHTML=`<div class="modal wide" role="dialog" aria-modal="true"><div class="modal-head"><span>${esc(a.name)}</span><button class="btn light close">Close</button></div>
+ <div class="modal-body"><div class="preview"><div class="preview-art">${esc(a.name.replace("Asset ",""))}</div><div class="preview-info"><h2>${esc(a.name)}</h2><div class="meta-line"><strong>Campaign:</strong> ${esc(campaigns[cid].title)}</div><div class="meta-line"><strong>Type:</strong> ${esc(a.type||"Creative")}</div><div class="meta-line"><strong>Dimensions:</strong> ${esc(a.dimensions||"—")}</div><div class="meta-line"><strong>Date added:</strong> ${esc(a.date)}</div><p>${esc(a.description||"No description.")}</p><div class="actions"><button class="btn" id="edit">Edit asset</button><button class="btn light" id="copy">Copy to other campaign</button></div></div></div></div></div>`;
+ document.body.appendChild(b);const close=()=>b.remove();b.querySelectorAll(".close").forEach(x=>x.onclick=close);b.onclick=e=>{if(e.target===b)close();};
+ b.querySelector("#edit").onclick=()=>{close();formModal("Edit asset",a,null,data=>{Object.assign(a,{name:data.name.trim()||a.name,type:data.type,dimensions:data.dimensions,description:data.description,newAsset:false});render();toast("Asset changes saved.");});};
+ b.querySelector("#copy").onclick=()=>{const dest=destinationForCopy(cid);if(!dest){toast("Copy is available while comparing two campaigns.");return;}campaigns[dest].assets.push({...clone(a),id:uid(dest),date:"Sep 18, 2026",newAsset:true});close();render();toast(a.name+" copied to "+campaigns[dest].title+".");};
+}
+
+function openChangesPreview(){
+ const a=campaigns[selected[0]],b=campaigns[selected[1]];
+ const namesA=new Set(a.assets.map(x=>x.name)),namesB=new Set(b.assets.map(x=>x.name));
+ const onlyA=a.assets.filter(x=>!namesB.has(x.name)),onlyB=b.assets.filter(x=>!namesA.has(x.name));
+ const box=document.createElement("div");box.className="modal-backdrop";
+ box.innerHTML=`<div class="modal wide"><div class="modal-head"><span>Preview changes</span><button class="btn light close">Close</button></div><div class="modal-body">
+ <h2>${esc(a.title)} vs ${esc(b.title)}</h2><p style="color:#666">This is a quick review of asset differences before you commit your campaign changes.</p>
+ <div class="diff"><div class="diff-panel"><h3>${esc(a.title)}</h3>${a.assets.map(x=>`<div class="diff-item">${esc(x.name)} ${x.newAsset?'<span class="new-label">new</span>':""}</div>`).join("")||'<div class="empty">No assets</div>'}</div>
+ <div class="diff-panel"><h3>${esc(b.title)}</h3>${b.assets.map(x=>`<div class="diff-item">${esc(x.name)} ${x.newAsset?'<span class="new-label">new</span>':""}</div>`).join("")||'<div class="empty">No assets</div>'}</div></div>
+ <div style="margin-top:20px" class="change-list">${onlyA.map(x=>`<div class="change"><span>${esc(x.name)} only in ${esc(a.title)}</span><span class="tag remove">ONLY HERE</span></div>`).join("")}${onlyB.map(x=>`<div class="change"><span>${esc(x.name)} only in ${esc(b.title)}</span><span class="tag add">ONLY HERE</span></div>`).join("")}${!onlyA.length&&!onlyB.length?'<div class="empty">The two campaigns currently contain the same asset names.</div>':""}</div>
+ </div><div class="modal-footer"><button class="btn light close">Back to compare</button><button class="btn" id="done">Looks good</button></div></div>`;
+ document.body.appendChild(box);box.querySelectorAll(".close").forEach(x=>x.onclick=()=>box.remove());box.querySelector("#done").onclick=()=>{box.remove();toast("Changes preview approved.");};
+}
+
+function confirmModal(title,message,action){
+ const b=document.createElement("div");b.className="modal-backdrop";b.innerHTML=`<div class="modal confirm"><div class="modal-head"><span>${title}</span><button class="btn light close">Close</button></div><div class="modal-body"><p>${message}</p></div><div class="modal-footer"><button class="btn light close">Cancel</button><button class="btn danger" id="confirm">Confirm</button></div></div>`;
+ document.body.appendChild(b);b.querySelectorAll(".close").forEach(x=>x.onclick=()=>b.remove());b.querySelector("#confirm").onclick=()=>{b.remove();action();};
+}
+
+render();
+})();
+</script>
+</body>
+</html>
