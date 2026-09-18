@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Campaign Compare Prototype</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#bdbdbd;--panel:#ddd;--white:#fff;--line:#222;--muted:#666;--dark:#292929;--green:#dcffd0;--red:#f4d7d7}
+body{margin:0;background:#aaa;font-family:Arial,Helvetica,sans-serif;color:#111}
+.app{min-height:100vh;border:3px solid #222;background:var(--bg);padding-bottom:86px}.topbar{height:60px;background:#aaa;border-bottom:1px solid #999}
+.page{padding:30px 22px 48px;max-width:1500px;margin:auto}.header{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:25px}h1{font-size:25px;font-weight:400;margin:0}h2{font-size:22px;font-weight:400;margin:0 0 6px}h3{font-size:17px;font-weight:500;margin:0 0 8px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}.btn{border:0;background:var(--dark);color:#fff;padding:12px 17px;min-height:44px}.btn:hover{background:#111}.btn.light{background:#fff;color:#222;border:1px solid #aaa}.btn:disabled{opacity:.45;cursor:not-allowed}
+.table-wrap{background:#ddd;padding:30px;border:1px solid #c8c8c8;overflow-x:auto}table{width:100%;border-collapse:collapse;background:#fff;min-width:950px}th{background:#ddd;text-align:left;padding:13px 15px;font-size:14px;font-weight:500}td{padding:14px 15px;border-top:1px solid #222;font-size:14px}.data-row{cursor:pointer}.data-row:hover{background:#f3f3f3}.status-live{font-weight:500}.status-draft{color:#666}.kebab{font-size:18px;border:0;background:transparent;padding:8px}.dropdown{position:absolute;background:#fff;border:1px solid #aaa;box-shadow:0 4px 14px #0002;z-index:30;min-width:190px}.dropdown button{display:block;width:100%;text-align:left;border:0;background:#fff;padding:12px}.dropdown button:hover{background:#eee}
+.compare-bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #aaa;box-shadow:0 -3px 10px #0002;z-index:40;padding:10px 28px;display:flex;align-items:center;gap:12px;min-height:74px}.compare-bar-label{font-size:14px}.compare-select{height:44px;min-width:160px;border:1px solid #888;background:#fff;padding:0 12px}.compare-search-wrap{position:relative;min-width:240px}.compare-search{height:44px;width:100%;border:1px solid #888;padding:0 12px}.campaign-trigger{display:flex;align-items:center;justify-content:space-between;text-align:left;cursor:pointer}.picker-search{width:calc(100% - 16px);height:36px;margin:8px;border:1px solid #888;padding:6px 10px;outline:none}.campaign-picker{position:absolute;bottom:48px;left:0;width:100%;background:#fff;border:1px solid #888;box-shadow:0 4px 12px #0003;max-height:260px;overflow:auto}.campaign-option{padding:12px;border:0;background:#fff;width:100%;text-align:left;display:block}.campaign-option:hover{background:#eee}.campaign-option.disabled{color:#888;cursor:default}.compare-bar .btn{margin-left:auto}
+.compare-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:24px}.crumb{display:flex;align-items:center;gap:8px;margin:0;font-size:16px}.link{background:none;border:0;padding:0;font-size:16px;text-decoration:underline}.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:34px}.campaign-panel{background:#ddd;padding:18px;min-width:0;border:1px solid #ccc}.campaign-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:18px}.campaign-status-row{display:flex;align-items:center;gap:10px;margin-top:6px}.campaign-status{font-size:12px;color:#666}.campaign-status-row .live-lock-banner{margin-top:0}.campaign-name{font-size:23px;font-weight:400}.live-lock-banner{display:inline-block;padding:6px 9px;background:var(--red);border:1px solid #d8aaaa;font-size:11px;color:#6b2222}
+.search{width:100%;height:36px;border:1px solid #ddd;background:#fff;padding:6px 12px;margin-bottom:16px;outline:none}.asset-table{background:#fff}.asset-head,.asset-row{display:grid;grid-template-columns:45px minmax(120px,1fr) 145px 175px;align-items:center}.asset-head{background:#f2f2f2;font-size:13px;font-weight:500}.asset-head>div,.asset-row>div{padding:10px}.asset-row{border-top:1px solid #222;min-height:55px}.asset-row.new{background:var(--green)}.asset-name{cursor:pointer}.asset-name:hover{text-decoration:underline}.asset-actions{display:flex;gap:5px}.small{background:#fff;border:1px solid #aaa;padding:6px 8px;font-size:12px}.small:hover{background:#eee}.hint{font-size:12px;color:#666;margin-top:10px}.check{width:23px;height:23px;accent-color:#222;vertical-align:middle}.empty{padding:28px;text-align:center;color:#666}.toast{position:fixed;right:24px;bottom:92px;background:#222;color:#fff;padding:13px 18px;z-index:100;max-width:360px}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.52);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}.modal{background:#fff;width:min(760px,96vw);max-height:90vh;overflow:auto;border:1px solid #222}.modal-head{display:flex;justify-content:space-between;align-items:center;padding:17px 21px;border-bottom:1px solid #ccc;font-size:20px}.modal-body{padding:24px}.modal-footer{display:flex;justify-content:flex-end;gap:9px;padding:15px 21px;border-top:1px solid #ccc}
+@media(max-width:900px){.compare-grid{grid-template-columns:1fr}.compare-bar{flex-wrap:wrap}.compare-bar .btn{margin-left:0}.compare-search-wrap{min-width:200px;flex:1}}
+</style>
+</head>
+<body>
+<div class="app"><div class="topbar"></div><main class="page" id="app"></main></div>
+<script>
+(function(){
+'use strict';
+const campaigns={
+ A:{id:'A',title:'Campaign A',created:'July 3, 2026',published:'Sep 10, 2026',status:'Published / Live',creator:'Jose S',assets:[
+  {id:'A-1',name:'Asset A',date:'July 3, 2026',type:'Banner',description:'Primary campaign banner'},
+  {id:'A-2',name:'Asset B',date:'July 3, 2026',type:'Social',description:'Social square creative'},
+  {id:'A-3',name:'Asset C',date:'July 3, 2026',type:'Email',description:'Email hero creative'}]},
+ B:{id:'B',title:'Campaign B',created:'Sep 10, 2026',published:'—',status:'In progress / draft',creator:'Jose S',assets:[
+  {id:'B-1',name:'Asset A',date:'Sep 18, 2026',type:'Banner',description:'New campaign banner'},
+  {id:'B-2',name:'Asset D',date:'July 3, 2026',type:'Social',description:'Launch social creative'}]},
+ C:{id:'C',title:'Campaign C',created:'Nov 2, 2025',published:'Dec 20, 2025',status:'Published / Live',creator:'Peter D',assets:[
+  {id:'C-1',name:'Asset E',date:'Dec 20, 2025',type:'Banner',description:'Holiday banner'},
+  {id:'C-2',name:'Asset F',date:'Dec 20, 2025',type:'Social',description:'Holiday social creative'}]}
+};
+let view='list',compareSelection=null,compareCandidate='',pickerOpen=false,pickerQuery='',toastTimer;
+const app=document.getElementById('app');
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+function toast(msg){clearTimeout(toastTimer);document.querySelectorAll('.toast').forEach(x=>x.remove());const x=document.createElement('div');x.className='toast';x.textContent=msg;document.body.appendChild(x);toastTimer=setTimeout(()=>x.remove(),2200);}
+function render(){view==='list'?renderList():renderCompare();}
+function renderList(){
+ app.innerHTML=`<div class="header"><h1>Campaigns</h1><button class="btn" id="add">+ Add campaign</button></div>
+ <div class="table-wrap"><table><thead><tr><th>Campaign title</th><th>Date created</th><th>Date published</th><th>Status</th><th>Created by</th><th>Actions</th></tr></thead><tbody>
+ ${Object.values(campaigns).map(c=>`<tr class="data-row" data-id="${c.id}"><td>${esc(c.title)}</td><td>${esc(c.created)}</td><td>${esc(c.published)}</td><td>${esc(c.status)}</td><td>${esc(c.creator)}</td><td><button class="kebab row-menu" data-id="${c.id}" aria-label="Campaign actions">⋯</button></td></tr>`).join('')}
+ </tbody></table></div>`;
+ document.querySelectorAll('.data-row').forEach(r=>r.onclick=e=>{if(e.target.closest('.row-menu'))return;toast('Open campaign '+campaigns[r.dataset.id].title+' (editing is outside this prototype).');});
+ document.querySelectorAll('.row-menu').forEach(b=>b.onclick=e=>{e.stopPropagation();openMenu(b,b.dataset.id);});
+ document.getElementById('add').onclick=()=>toast('Add campaign flow is outside this prototype.');
+ if(compareSelection)renderCompareBar();
+}
+function openMenu(button,cid){
+ document.querySelectorAll('.dropdown').forEach(x=>x.remove());
+ const d=document.createElement('div');d.className='dropdown';const r=button.getBoundingClientRect();d.style.top=(r.bottom+scrollY)+'px';d.style.left=(r.left+scrollX-130)+'px';
+ d.innerHTML=`<button data-action="edit">Edit</button><button data-action="compare">Compare</button><button data-action="duplicate">Duplicate</button>${campaigns[cid].status.includes('draft')?'':'<button data-action="unpublish">Unpublish</button>'}<button data-action="delete">Delete</button>`;
+ document.body.appendChild(d);
+ d.onclick=e=>{const action=e.target.dataset.action;if(!action)return;d.remove();if(action==='compare')startCompare(cid);else toast(action.charAt(0).toUpperCase()+action.slice(1)+' is outside this prototype.');};
+ setTimeout(()=>document.addEventListener('click',function close(e){if(!d.contains(e.target)){d.remove();document.removeEventListener('click',close);}}, {once:true}),0);
+}
+function startCompare(cid){compareSelection=cid;compareCandidate='';pickerQuery='';pickerOpen=false;render();}
+function renderCompareBar(){
+ const old=document.querySelector('.compare-bar');if(old)old.remove();
+ const available=Object.values(campaigns).filter(c=>c.id!==compareSelection).filter(c=>!pickerQuery||c.title.toLowerCase().includes(pickerQuery.toLowerCase()));
+ const selectedLabel=compareCandidate?campaigns[compareCandidate].title:'Select campaign';
+ const bar=document.createElement('div');bar.className='compare-bar';
+ bar.innerHTML=`<span class="compare-bar-label">Comparing:</span><select class="compare-select" id="firstCampaign" aria-label="First campaign"><option value="${compareSelection}">${esc(campaigns[compareSelection].title)}</option></select><span>with</span><div class="compare-search-wrap"><button type="button" class="compare-select campaign-trigger" id="campaignTrigger" aria-haspopup="listbox" aria-expanded="${pickerOpen}">${esc(selectedLabel)} <span aria-hidden="true">⌄</span></button><div class="campaign-picker" id="picker" style="display:${pickerOpen?'block':'none'}"><input class="picker-search" id="pickerSearch" placeholder="Search campaigns" value="${esc(pickerQuery)}" aria-label="Search campaigns">${available.length?available.map(c=>`<button type="button" class="campaign-option" data-id="${c.id}">${esc(c.title)}</button>`).join(''):'<div class="campaign-option disabled">No campaigns found</div>'}</div></div><button class="btn" id="compareGo" ${compareCandidate?'':'disabled'}>Compare</button>`;
+ document.body.appendChild(bar);
+ const trigger=bar.querySelector('#campaignTrigger');
+ trigger.onclick=()=>{pickerOpen=!pickerOpen;renderCompareBar();if(pickerOpen)setTimeout(()=>document.querySelector('#pickerSearch')?.focus(),0);};
+ bar.querySelectorAll('.campaign-option[data-id]').forEach(o=>o.onclick=()=>{compareCandidate=o.dataset.id;pickerQuery='';pickerOpen=false;renderCompareBar();});
+ const search=bar.querySelector('#pickerSearch');
+ if(search){
+  search.oninput=()=>{pickerQuery=search.value;pickerOpen=true;renderCompareBar();setTimeout(()=>{const x=document.querySelector('#pickerSearch');if(x){x.focus();x.setSelectionRange(x.value.length,x.value.length);}},0);};
+  search.onkeydown=e=>{if(e.key==='Escape'){pickerOpen=false;renderCompareBar();}if(e.key==='Enter'){const first=available[0];if(first){compareCandidate=first.id;pickerQuery='';pickerOpen=false;renderCompareBar();}}};
+ }
+ bar.querySelector('#compareGo').onclick=()=>{if(compareCandidate){view='compare';pickerOpen=false;render();}};
+}
+function panel(c){
+ const locked=c.id==='A';
+ return `<section class="campaign-panel"><div class="campaign-head"><div><div class="campaign-name">${esc(c.title)}</div><div class="campaign-status-row"><span class="campaign-status">${esc(c.status)}</span>${locked?'<div class="live-lock-banner">This campaign is live and can not be edited</div>':''}</div></div></div><input class="search" placeholder="Search asset"><div class="asset-table"><div class="asset-head"><div></div><div>Asset name</div><div>Date added</div><div>Actions</div></div>${c.assets.map(a=>`<div class="asset-row ${a.newAsset?'new':''}"><div></div><div class="asset-name">${locked&&a.name==='Asset B'?'<span title="This asset is locked" style="margin-right:7px">🔒</span>':''}${esc(a.name)}</div><div>${esc(a.date)}</div><div class="asset-actions"><button class="small">Preview</button><button class="small">Edit</button></div></div>`).join('')}</div></section>`;
+}
+function renderCompare(){
+ if(!compareSelection||!compareCandidate){view='list';render();return;}
+ const a=campaigns[compareSelection],b=campaigns[compareCandidate];
+ app.innerHTML=`<div class="compare-top"><div class="crumb"><button class="link" id="back">← Campaigns</button><span>›</span><span>Comparing ${esc(a.title)} and ${esc(b.title)}</span></div><button class="btn" id="previewChanges">Preview changes</button></div><div class="compare-grid">${panel(a)}${panel(b)}</div>`;
+ document.getElementById('back').onclick=()=>{view='list';compareSelection=null;compareCandidate='';render();};
+ document.getElementById('previewChanges').onclick=()=>toast('Preview changes is outside this prototype.');
+}
+render();
+})();
+</script>
+</body>
+</html>
