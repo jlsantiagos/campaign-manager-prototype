@@ -1,4 +1,5 @@
 name: Deploy static prototypes to GitHub Pages
+# Redeploy latest prototype
 
 on:
   push:
